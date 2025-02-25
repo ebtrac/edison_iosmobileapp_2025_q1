@@ -11,4 +11,7 @@ struct ToDoItem: Identifiable, Codable {
     var id: UUID = UUID()
     var title: String
     var isComplete: Bool = false
+    var priority: ItemPriority = .medium
+    var dueDate: Date?
+    var tags: [String] = []
 }

@@ -10,8 +10,7 @@ import SwiftUI
 struct ContentView: View {
 
     @StateObject private var viewModel = ToDoListViewModel()
-    
-
+    @State private var selectedPriority: ItemPriority = .medium
     
     var body: some View {
         VStack {
@@ -20,6 +19,18 @@ struct ContentView: View {
                 Button("Add") {
                     viewModel.addItem()
                 }
+            }
+            .padding([.leading, .trailing, .bottom], 15)
+            .background(Color.blue.opacity(0.2))
+            
+            HStack {
+                Text("Priority")
+                Spacer()
+                Picker("Priority", selection: $selectedPriority) {
+                    ForEach(ItemPriority.allCases) { priority in
+                        Text(priority.rawValue)
+                    }
+                }.pickerStyle(SegmentedPickerStyle())
             }
             .padding([.leading, .trailing, .bottom], 15)
             .background(Color.blue.opacity(0.2))
