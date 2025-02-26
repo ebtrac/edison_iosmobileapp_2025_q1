@@ -16,12 +16,37 @@ class ToDoListViewModel: ObservableObject {
     @Published var editingItemId: UUID? = nil
     @Published var inputTask: String = ""
     @Published var toDoItems: [ToDoItem] = []
+    @Published var selectedPriority: ItemPriority = .low
     
     func addItem() {
         if inputTask.isEmpty { return }
-        toDoItems.append(ToDoItem(title: inputTask))
+        toDoItems.append(ToDoItem(title: inputTask, priority: selectedPriority))
         inputTask = ""
+        sortByPriority()
         repository.saveToDoItems(toDoItems)
+    }
+    
+    func sortByPriority() {
+        toDoItems.sort { (item1, item2) -> Bool in
+            switch (item1.priority, item2.priority) {
+            case (.low, .high):
+                fallthrough
+            case (.low, .medium):
+                fallthrough
+            case (.medium, .high):
+                return false
+                
+            case (.high, .low):
+                fallthrough
+            case (.high, .medium):
+                fallthrough
+            case(.medium, .low):
+                return true
+                
+            default:
+                return item1.title < item2.title
+            }
+        }
     }
     
     func removeItem(_ item: ToDoItem) {
@@ -57,6 +82,7 @@ class ToDoListViewModel: ObservableObject {
     
     func loadData() {
         toDoItems = repository.loadToDoItems()
+        sortByPriority()
     }
 }
 

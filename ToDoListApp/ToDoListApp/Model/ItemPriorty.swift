@@ -7,9 +7,9 @@
 
 import Foundation
 
-enum ItemPriority : String, Codable, CaseIterable, Identifiable {
-    case low = "Low"
-    case medium = "Medium"
-    case high = "High"
+enum ItemPriority : Int, Codable, CaseIterable, Identifiable {
+    case low = 0
+    case medium = 1
+    case high = 2
     var id: Self { self }
 }

@@ -10,7 +10,6 @@ import SwiftUI
 struct ContentView: View {
 
     @StateObject private var viewModel = ToDoListViewModel()
-    @State private var selectedPriority: ItemPriority = .medium
     
     var body: some View {
         VStack {
@@ -26,9 +25,10 @@ struct ContentView: View {
             HStack {
                 Text("Priority")
                 Spacer()
-                Picker("Priority", selection: $selectedPriority) {
+                Picker("Priority", selection: $viewModel.selectedPriority) {
                     ForEach(ItemPriority.allCases) { priority in
-                        Text(priority.rawValue)
+                        let priorityStrings = ["Low", "Medium", "High"]
+                        Text(priorityStrings[priority.rawValue])
                     }
                 }.pickerStyle(SegmentedPickerStyle())
             }
@@ -62,6 +62,13 @@ struct ContentView: View {
                         }
                         
                         Spacer()
+                        
+                        if(item.priority == ItemPriority.medium) {
+                            Image(systemName: "exclamationmark.2")
+                        } else if(item.priority == ItemPriority.high) {
+                            Image(systemName: "exclamationmark.3")
+                        }
+                        
                         Button {
                             viewModel.removeItem(item)
                         } label: {
