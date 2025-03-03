@@ -18,6 +18,7 @@ class ToDoListViewModel: ObservableObject {
     @Published var inputTags: String = ""
     @Published var toDoItems: [ToDoItem] = []
     @Published var selectedPriority: ItemPriority = .low
+    @Published var searchText: String = ""
     
     func addItem() {
         if inputTask.isEmpty { return }
@@ -75,6 +76,15 @@ class ToDoListViewModel: ObservableObject {
     
     func parseTags(_ input: String) -> [String] {
         input.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+    }
+    
+    func itemMatchesSearchQuery(_ item: ToDoItem) -> Bool {
+        if searchText.isEmpty { return true }
+        if let range = item.title.range(of: searchText, options: .caseInsensitive) {
+            return true
+        } else {
+            return false
+        }
     }
     
     func onSubmit() {

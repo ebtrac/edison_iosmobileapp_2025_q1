@@ -14,7 +14,7 @@ struct ContentView: View {
     
     var body: some View {
         VStack {
-            VStack {
+            VStack { // Input controls
                 HStack {
                     TextField("Input Task", text: $viewModel.inputTask)
                     Button("Add") {
@@ -47,6 +47,7 @@ struct ContentView: View {
             List { // begin rendering task list
                 ForEach(viewModel.toDoItems) { item in
                     if !(hideCompleted && item.isComplete)
+                        && viewModel.itemMatchesSearchQuery(item)
                     {
                         HStack {
                             Image(systemName: item.isComplete ? "checkmark.circle.fill" : "circle")
@@ -102,6 +103,15 @@ struct ContentView: View {
             }
             
             Spacer()
+            
+            // Search Bar
+            HStack {
+                TextField("Search", text: $viewModel.searchText)
+                Image(systemName: "magnifyingglass")
+            }
+            .padding()
+            .background(Color.secondary.opacity(0.2))
+            .cornerRadius(8)
         }
         .onAppear() {
             viewModel.loadData()
