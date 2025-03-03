@@ -15,13 +15,15 @@ class ToDoListViewModel: ObservableObject {
     
     @Published var editingItemId: UUID? = nil
     @Published var inputTask: String = ""
+    @Published var inputTags: String = ""
     @Published var toDoItems: [ToDoItem] = []
     @Published var selectedPriority: ItemPriority = .low
     
     func addItem() {
         if inputTask.isEmpty { return }
-        toDoItems.append(ToDoItem(title: inputTask, priority: selectedPriority))
+        toDoItems.append(ToDoItem(title: inputTask, priority: selectedPriority, tags: parseTags(inputTags) ))
         inputTask = ""
+        inputTags = ""
         sortByPriority()
         repository.saveToDoItems(toDoItems)
     }
@@ -71,8 +73,13 @@ class ToDoListViewModel: ObservableObject {
         }
     }
     
+    func parseTags(_ input: String) -> [String] {
+        input.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+    }
+    
     func onSubmit() {
         editingItemId = nil
+        inputTags = ""
         repository.saveToDoItems(toDoItems)
     }
     

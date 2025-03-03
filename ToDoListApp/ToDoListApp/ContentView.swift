@@ -37,11 +37,14 @@ struct ContentView: View {
                 
                 Toggle("Hide Completed", isOn: $hideCompleted)
                     .padding([.leading, .trailing, .bottom], 15)
+                
+                TextField("Tags", text: $viewModel.inputTags)
+                    .padding([.leading, .trailing, .bottom], 15)
                                     
             }
             .background(Color.blue.opacity(0.2))
 
-            List {
+            List { // begin rendering task list
                 ForEach(viewModel.toDoItems) { item in
                     if !(hideCompleted && item.isComplete)
                     {
@@ -50,24 +53,34 @@ struct ContentView: View {
                                 .onTapGesture {
                                     viewModel.toggleItem(item)
                                 }
-                            if viewModel.editingItemId == item.id {
-                                TextField("", text: Binding(
-                                    get: { item.title },
-                                    set: { newValue in
-                                        viewModel.updateItemText(item, newValue)
+                            VStack(alignment: .leading) { // task title with editing support
+                                if viewModel.editingItemId == item.id {
+                                    TextField("", text: Binding(
+                                        get: { item.title },
+                                        set: { newValue in
+                                            viewModel.updateItemText(item, newValue)
+                                        }
+                                    ))
+                                    .onSubmit {
+                                        viewModel.onSubmit()
                                     }
-                                ))
-                                .onSubmit {
-                                    viewModel.onSubmit()
+                                }
+                                else {
+                                    Text(item.title)
+                                        .strikethrough(item.isComplete)
+                                        .onTapGesture {
+                                            viewModel.onTapItem(item)
+                                        }
+                                }
+                                
+                                // tiny text for tags
+                                if !item.tags.isEmpty {
+                                    Text(item.tags.joined(separator: ", "))
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
                                 }
                             }
-                            else {
-                                Text(item.title)
-                                    .strikethrough(item.isComplete)
-                                    .onTapGesture {
-                                        viewModel.onTapItem(item)
-                                    }
-                            }
+
                             
                             Spacer()
                             
