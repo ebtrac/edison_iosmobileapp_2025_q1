@@ -38,8 +38,26 @@ struct ContentView: View {
                 Toggle("Hide Completed", isOn: $hideCompleted)
                     .padding([.leading, .trailing, .bottom], 15)
                 
+                // Select notification time
+                Toggle("Notification", isOn: $viewModel.isNotificationEnabled)
+                    .padding([.leading, .trailing], 15)
+                    .onChange(of: viewModel.isNotificationEnabled) {
+                        viewModel.selectedTime = Date()
+                    }
+                if ($viewModel.isNotificationEnabled.wrappedValue)
+                {
+                    DatePicker("   Date & Time", selection: $viewModel.selectedTime)
+                        .padding([.leading, .trailing], 15)
+                        .padding([.bottom, .top], 5)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(100)
+                        .onAppear() {
+                            viewModel.requestNotificationPermission()
+                        }
+                }
+                
                 TextField("Tags", text: $viewModel.inputTags)
-                    .padding([.leading, .trailing, .bottom], 15)
+                    .padding([.leading, .trailing, .bottom, .top], 15)
                                     
             }
             .background(Color.blue.opacity(0.2))
@@ -100,7 +118,7 @@ struct ContentView: View {
                         }
                     }
                 }
-            }
+            } // List
             
             Spacer()
             
@@ -111,7 +129,7 @@ struct ContentView: View {
             }
             .padding()
             .background(Color.secondary.opacity(0.2))
-            .cornerRadius(8)
+            .cornerRadius(80)
         }
         .onAppear() {
             viewModel.loadData()

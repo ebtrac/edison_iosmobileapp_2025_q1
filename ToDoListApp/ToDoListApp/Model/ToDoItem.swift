@@ -12,6 +12,6 @@ struct ToDoItem: Identifiable, Codable {
     var title: String
     var isComplete: Bool = false
     var priority: ItemPriority = .low
-    var dueDate: Date?
+    var dueDate: Date? = nil
     var tags: [String] = []
 }

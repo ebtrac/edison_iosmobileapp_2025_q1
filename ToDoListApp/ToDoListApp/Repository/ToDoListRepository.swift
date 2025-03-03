@@ -26,7 +26,7 @@ class ToDoListRepositoryImpl: ToDoListRepository {
     }
     
     func loadToDoItems() -> [ToDoItem] {
-        if let data = UserDefaults.standard.data(forKey: "toDoItems") {
+        if UserDefaults.standard.data(forKey: "toDoItems") != nil {
             do {
               return try JSONDecoder().decode([ToDoItem].self, from: toDoItemsData)
             } catch {

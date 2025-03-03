@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import UserNotifications
 
 class ToDoListViewModel: ObservableObject {
     
@@ -19,15 +20,31 @@ class ToDoListViewModel: ObservableObject {
     @Published var toDoItems: [ToDoItem] = []
     @Published var selectedPriority: ItemPriority = .low
     @Published var searchText: String = ""
+    @Published var selectedTime: Date = Date()
+    @Published var isNotificationEnabled: Bool = false
+    
     
     func addItem() {
         if inputTask.isEmpty { return }
-        toDoItems.append(ToDoItem(title: inputTask, priority: selectedPriority, tags: parseTags(inputTags) ))
+        let newItem = ToDoItem(
+            title: inputTask,
+            priority: selectedPriority,
+            dueDate: isNotificationEnabled ? selectedTime : nil,
+            tags: parseTags(inputTags)
+        )
+        toDoItems.append(newItem)
+        if(isNotificationEnabled) {
+            Task {
+                await scheduleNotification(at: selectedTime, with: newItem)
+            }
+        }
         inputTask = ""
         inputTags = ""
         sortByPriority()
         repository.saveToDoItems(toDoItems)
     }
+    
+   
     
     func sortByPriority() {
         toDoItems.sort { (item1, item2) -> Bool in
@@ -54,6 +71,10 @@ class ToDoListViewModel: ObservableObject {
     
     func removeItem(_ item: ToDoItem) {
         if let index = toDoItems.firstIndex(where: { $0.id == item.id }) {
+            let item = toDoItems[index]
+            if item.dueDate != nil {
+                removeNotification(uuid:item.id)
+            }
             toDoItems.remove(at: index)
             repository.saveToDoItems(toDoItems)
         }
@@ -80,7 +101,7 @@ class ToDoListViewModel: ObservableObject {
     
     func itemMatchesSearchQuery(_ item: ToDoItem) -> Bool {
         if searchText.isEmpty { return true }
-        if let range = item.title.range(of: searchText, options: .caseInsensitive) {
+        if item.title.localizedStandardRange(of: searchText) != nil {
             return true
         } else {
             return false
@@ -101,6 +122,40 @@ class ToDoListViewModel: ObservableObject {
     func loadData() {
         toDoItems = repository.loadToDoItems()
         sortByPriority()
+    }
+    
+    func requestNotificationPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if let error = error {
+                print("Error requesting permission: \(error)")
+            }
+        }
+    }
+
+    func scheduleNotification(at date: Date, with item: ToDoItem) async {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+
+        let content = UNMutableNotificationContent()
+        content.title = "ToDoList Reminder"
+        content.body = item.title
+        content.sound = .default
+
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let request = UNNotificationRequest(identifier: item.id.uuidString, content: content, trigger: trigger)
+        
+        let notificationCenter = UNUserNotificationCenter.current()
+            
+        do {
+            try await notificationCenter.add(request)
+        } catch {
+            print("NOOOOO")
+        }
+    }
+    
+    func removeNotification(uuid:UUID) {
+        let notificationCenter = UNUserNotificationCenter.current()
+        notificationCenter.removePendingNotificationRequests(withIdentifiers: [uuid.uuidString])
     }
 }
 
